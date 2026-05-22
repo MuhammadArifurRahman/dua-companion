@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dua Companion — While Claude Works</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-2: #1c2230;
+      --green: #2d9a4e;
+      --green-light: #4ade80;
+      --green-glow: rgba(45, 154, 78, 0.3);
+      --gold: #d4a843;
+      --gold-light: #fbbf24;
+      --gold-glow: rgba(212, 168, 67, 0.3);
+      --orange: #ea580c;
+      --orange-light: #fb923c;
+      --orange-glow: rgba(234, 88, 12, 0.35);
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --border: #30363d;
+      --status-h: 52px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── Status Bar ── */
+    #status-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--status-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 100;
+      transition: border-color 0.4s;
+    }
+    #status-bar.is-done { border-bottom-color: var(--gold); }
+    #status-bar.is-offline { border-bottom-color: var(--border); }
+    #status-bar.needs-input {
+      border-bottom-color: var(--orange);
+      animation: bar-attention 1.2s ease-in-out infinite;
+    }
+
+    @keyframes bar-attention {
+      0%, 100% { box-shadow: none; }
+      50% { box-shadow: 0 2px 20px var(--orange-glow); }
+    }
+
+    #status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--green-light);
+      flex-shrink: 0;
+    }
+    #status-dot.waiting { animation: pulse 2s ease-in-out infinite; }
+    #status-dot.done { background: var(--gold-light); animation: none; }
+    #status-dot.offline { background: var(--text-muted); animation: none; }
+    #status-dot.needs-input {
+      background: var(--orange-light);
+      animation: pulse-urgent 0.7s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    @keyframes pulse-urgent {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 var(--orange-glow); }
+      50% { opacity: 0.8; transform: scale(1.5); box-shadow: 0 0 0 5px transparent; }
+    }
+
+    #status-text {
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--text-muted);
+      transition: color 0.4s;
+    }
+    #status-text.done { color: var(--gold-light); }
+    #status-text.offline { color: var(--text-muted); font-style: italic; }
+    #status-text.needs-input { color: var(--orange-light); font-weight: 600; }
+
+    /* ── Main Stage ── */
+    #stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--status-h) + 32px) 24px 120px;
+      min-height: 100vh;
+    }
+
+    /* ── Dua Card ── */
+    #dua-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 48px;
+      max-width: 720px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+    #dua-card.done {
+      border-color: var(--gold);
+      box-shadow: 0 0 32px var(--gold-glow);
+    }
+
+    #dua-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    #dua-number {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    #dua-context-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--green-light);
+      background: rgba(45, 154, 78, 0.12);
+      border: 1px solid rgba(74, 222, 128, 0.25);
+      border-radius: 20px;
+      padding: 3px 12px;
+    }
+
+    #arabic-text {
+      font-family: 'Amiri', 'Noto Naskh Arabic', 'Scheherazade New', serif;
+      font-size: 2.6rem;
+      line-height: 2.0;
+      direction: rtl;
+      color: var(--text);
+      margin-bottom: 24px;
+      text-shadow: 0 0 40px rgba(212, 168, 67, 0.15);
+    }
+
+    #transliteration {
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--gold);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    #translation {
+      font-size: 1rem;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    #virtue-text {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      line-height: 1.5;
+    }
+
+    /* ── Timer Bar ── */
+    #timer-track {
+      max-width: 720px;
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+    #timer-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--green), var(--green-light));
+      border-radius: 2px;
+      transition: width 0.1s linear;
+    }
+
+    /* ── Navigation ── */
+    #nav-controls {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 80px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px 20px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .nav-btn:hover { background: var(--border); border-color: var(--text-muted); }
+    .nav-btn:active { transform: scale(0.97); }
+
+    #pause-btn { min-width: 110px; }
+    #pause-btn.paused { color: var(--green-light); border-color: var(--green); }
+
+    /* ── Completion Overlay ── */
+    #completion-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 17, 23, 0.88);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      animation: fadeIn 0.4s ease;
+    }
+    #completion-overlay[hidden] { display: none; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #completion-card {
+      background: var(--surface);
+      border: 1px solid var(--gold);
+      border-radius: 20px;
+      padding: 48px 52px;
+      max-width: 440px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 0 60px var(--gold-glow);
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    #completion-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    #completion-card h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--gold-light);
+      margin-bottom: 12px;
+    }
+
+    #completion-card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    #dismiss-btn {
+      background: var(--gold);
+      border: none;
+      color: #0d1117;
+      border-radius: 8px;
+      padding: 12px 28px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    #dismiss-btn:hover { background: var(--gold-light); }
+    #dismiss-btn:active { transform: scale(0.97); }
+
+    /* ── Needs Input Overlay ── */
+    #input-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 17, 23, 0.88);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      animation: fadeIn 0.35s ease;
+    }
+    #input-overlay[hidden] { display: none; }
+
+    #input-card {
+      background: var(--surface);
+      border: 1px solid var(--orange);
+      border-radius: 20px;
+      padding: 48px 52px;
+      max-width: 440px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 0 60px var(--orange-glow);
+      animation: slideUp 0.35s ease;
+    }
+
+    #input-card .input-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    #input-card h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--orange-light);
+      margin-bottom: 12px;
+    }
+
+    #input-card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+
+    /* ── Language Toggle ── */
+    #lang-toggle {
+      position: absolute;
+      right: 16px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .lang-btn:hover { border-color: var(--text-muted); color: var(--text); }
+    .lang-btn.active {
+      background: rgba(45, 154, 78, 0.15);
+      border-color: var(--green);
+      color: var(--green-light);
+    }
+
+    #translation-bn {
+      font-size: 1rem;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    /* ── Bismillah header ── */
+    #bismillah {
+      font-family: 'Amiri', serif;
+      font-size: 1.6rem;
+      color: var(--gold);
+      text-align: center;
+      padding: calc(var(--status-h) + 16px) 0 8px;
+      opacity: 0.7;
+      direction: rtl;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Status Bar -->
+  <div id="status-bar">
+    <span id="status-dot" class="waiting"></span>
+    <span id="status-text">Waiting for Claude to start...</span>
+    <div id="lang-toggle">
+      <button class="lang-btn active" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="bn">বাং</button>
+    </div>
+  </div>
+
+  <!-- Bismillah -->
+  <div id="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+
+  <!-- Dua Stage -->
+  <div id="stage">
+    <div id="dua-card">
+      <div id="dua-header">
+        <span id="dua-number">1 / 10</span>
+        <span id="dua-context-badge">For Knowledge</span>
+      </div>
+      <div id="arabic-text" lang="ar" dir="rtl"></div>
+      <div id="transliteration"></div>
+      <div id="translation"></div>
+      <div id="translation-bn" hidden></div>
+      <div id="virtue-text"></div>
+    </div>
+    <div id="timer-track">
+      <div id="timer-fill"></div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div id="nav-controls">
+    <button class="nav-btn" id="prev-btn">← Prev</button>
+    <button class="nav-btn" id="pause-btn">⏸ Pause</button>
+    <button class="nav-btn" id="next-btn">Next →</button>
+  </div>
+
+  <!-- Needs Input Overlay -->
+  <div id="input-overlay" hidden>
+    <div id="input-card">
+      <div class="input-icon">⚠️</div>
+      <h2>Your Approval Needed</h2>
+      <p>Claude has paused and is waiting for you to approve a command. Switch back to the terminal to continue.</p>
+    </div>
+  </div>
+
+  <!-- Completion Overlay -->
+  <div id="completion-overlay" hidden>
+    <div id="completion-card">
+      <div id="completion-icon">🌙</div>
+      <h2>Work Complete</h2>
+      <p>Claude has finished. Please take your time with the current dua — there is no rush to close.</p>
+      <button id="dismiss-btn">I'm Done Reading</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Dua Data ──────────────────────────────────────────────────────────────
+    const DUAS = [
+      {
+        context: 'For Knowledge',
+        arabic: 'رَبِّ زِدْنِي عِلْمًا',
+        transliteration: 'Rabbi zidnī \'ilmā',
+        translation: '"My Lord, increase me in knowledge."',
+        translation_bn: '"হে আমার রব, আমার জ্ঞান বৃদ্ধি করুন।"',
+        virtue: 'Quran 20:114 — Recite when starting any work or learning session.'
+      },
+      {
+        context: 'For Ease',
+        arabic: 'اللَّهُمَّ لَا سَهْلَ إِلَّا مَا جَعَلْتَهُ سَهْلًا\nوَأَنْتَ تَجْعَلُ الْحَزْنَ إِذَا شِئْتَ سَهْلًا',
+        transliteration: 'Allāhumma lā sahla illā mā ja\'altahu sahlān,\nwa anta taj\'alul-ḥazna idhā shi\'ta sahlā',
+        translation: '"O Allah, nothing is easy except what You make easy, and You make the difficult easy if You will."',
+        translation_bn: '"হে আল্লাহ, যা আপনি সহজ করেন তা ছাড়া কোনো কিছুই সহজ নয়, এবং আপনি যখন চান কঠিনকেও সহজ করে দেন।"',
+        virtue: 'Ibn Hibban — Recite when facing a hard problem or obstacle.'
+      },
+      {
+        context: 'For Patience',
+        arabic: 'رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا\nوَثَبِّتْ أَقْدَامَنَا وَانْصُرْنَا',
+        transliteration: 'Rabbanā afrigh \'alaynā ṣabran\nwa thabbit aqdāmanā wanṣurnā',
+        translation: '"Our Lord, pour upon us patience and plant firmly our feet and give us victory."',
+        translation_bn: '"হে আমাদের রব, আমাদের উপর ধৈর্য ঢেলে দিন, আমাদের পা অবিচল রাখুন এবং আমাদের বিজয় দান করুন।"',
+        virtue: 'Quran 2:250 — For steadfastness when work is long and tiring.'
+      },
+      {
+        context: 'For Forgiveness',
+        arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ\nخَلَقْتَنِي وَأَنَا عَبْدُكَ',
+        transliteration: 'Allāhumma anta rabbī lā ilāha illā anta,\nkhalaqtanī wa anā \'abduk',
+        translation: '"O Allah, You are my Lord. There is no god but You. You created me and I am Your servant."',
+        translation_bn: '"হে আল্লাহ, আপনি আমার রব। আপনি ছাড়া কোনো ইলাহ নেই। আপনি আমাকে সৃষ্টি করেছেন এবং আমি আপনার বান্দা।"',
+        virtue: 'Bukhari — Sayyid al-Istighfar: the master dua for seeking forgiveness. Best recited morning and evening.'
+      },
+      {
+        context: 'For Guidance',
+        arabic: 'اللَّهُمَّ اهْدِنِي وَسَدِّدْنِي',
+        transliteration: 'Allāhumma-hdinī wa saddidnī',
+        translation: '"O Allah, guide me and keep me on the right path."',
+        translation_bn: '"হে আল্লাহ, আমাকে হেদায়েত করুন এবং সঠিক পথে অটল রাখুন।"',
+        virtue: 'Muslim — Recite when uncertain about a decision or direction.'
+      },
+      {
+        context: 'For Gratitude',
+        arabic: 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ\nوَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
+        transliteration: 'Allāhumma a\'innī \'alā dhikrika\nwa shukrika wa ḥusni \'ibādatik',
+        translation: '"O Allah, help me to remember You, to give thanks to You, and to worship You well."',
+        translation_bn: '"হে আল্লাহ, আপনার স্মরণে, কৃতজ্ঞতায় এবং সুন্দর ইবাদতে আমাকে সাহায্য করুন।"',
+        virtue: 'Abu Dawud (authenticated) — Recite after completing a task, as gratitude for tawfiq (ability to act).'
+      },
+      {
+        context: 'For Anxiety',
+        arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ\nوَالْعَجْزِ وَالْكَسَلِ',
+        transliteration: 'Allāhumma innī a\'ūdhu bika minal-hammi wal-ḥazani\nwal-\'ajzi wal-kasali',
+        translation: '"O Allah, I seek refuge in You from worry and grief, from incapacity and laziness."',
+        translation_bn: '"হে আল্লাহ, আমি দুশ্চিন্তা ও দুঃখ থেকে, অক্ষমতা ও অলসতা থেকে আপনার কাছে আশ্রয় চাই।"',
+        virtue: 'Bukhari — Recite when feeling overwhelmed, anxious, or mentally blocked.'
+      },
+      {
+        context: 'Tawakkul (Reliance)',
+        arabic: 'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ',
+        transliteration: 'Ḥasbunallāhu wa ni\'mal-wakīl',
+        translation: '"Allah is sufficient for us, and He is the best disposer of affairs."',
+        translation_bn: '"আল্লাহই আমাদের জন্য যথেষ্ট এবং তিনি কতই না উত্তম কার্যসম্পাদক।"',
+        virtue: 'Quran 3:173 — Said by Ibrahim (AS). Recite when releasing control and trusting the outcome to Allah.'
+      },
+      {
+        context: 'For Repentance',
+        arabic: 'رَبَّنَا ظَلَمْنَا أَنْفُسَنَا\nوَإِنْ لَمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا\nلَنَكُونَنَّ مِنَ الْخَاسِرِينَ',
+        transliteration: 'Rabbanā ẓalamnā anfusanā,\nwa il-lam taghfir lanā wa tarḥamnā,\nlanakūnanna minal-khāsirīn',
+        translation: '"Our Lord, we have wronged ourselves. If You do not forgive us and have mercy upon us, we will surely be among the losers."',
+        translation_bn: '"হে আমাদের রব, আমরা নিজেদের উপর জুলুম করেছি। যদি আপনি আমাদের ক্ষমা না করেন এবং দয়া না করেন, তবে নিশ্চয়ই আমরা ক্ষতিগ্রস্তদের অন্তর্ভুক্ত হব।"',
+        virtue: 'Quran 7:23 — The Dua of Adam (AS). Recite whenever you have made an error.'
+      },
+      {
+        context: 'Evening / Closing',
+        arabic: 'اللَّهُمَّ بِكَ أَمْسَيْنَا وَبِكَ أَصْبَحْنَا\nوَبِكَ نَحْيَا وَبِكَ نَمُوتُ\nوَإِلَيْكَ الْمَصِيرُ',
+        transliteration: 'Allāhumma bika amsaynā wa bika aṣbaḥnā,\nwa bika naḥyā wa bika namūtu,\nwa ilaykal-maṣīr',
+        translation: '"O Allah, by You we enter the evening and by You we enter the morning, by You we live and by You we die, and to You is the return."',
+        translation_bn: '"হে আল্লাহ, আপনার নামেই আমরা সন্ধ্যায় প্রবেশ করি এবং আপনার নামেই ভোরে প্রবেশ করি, আপনার দ্বারাই আমরা জীবিত থাকি এবং আপনার দ্বারাই মৃত্যুবরণ করি, এবং আপনার কাছেই আমাদের ফিরে যেতে হবে।"',
+        virtue: 'Tirmidhi — Recite at the close of a work session or in the evening.'
+      }
+    ];
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    const state = {
+      currentIndex: 0,
+      paused: false,
+      workDone: false,
+      needsInput: false,
+      timerProgress: 0,
+      timerInterval: null,
+      pollInterval: null,
+      DUA_DURATION_MS: 30000,
+      lang: localStorage.getItem('duaLang') || 'en'
+    };
+
+    // ── DOM refs ──────────────────────────────────────────────────────────────
+    const $statusBar   = document.getElementById('status-bar');
+    const $statusDot   = document.getElementById('status-dot');
+    const $statusText  = document.getElementById('status-text');
+    const $duaCard     = document.getElementById('dua-card');
+    const $duaNumber   = document.getElementById('dua-number');
+    const $badge       = document.getElementById('dua-context-badge');
+    const $arabic      = document.getElementById('arabic-text');
+    const $translit    = document.getElementById('transliteration');
+    const $translation = document.getElementById('translation');
+    const $virtue      = document.getElementById('virtue-text');
+    const $timerFill   = document.getElementById('timer-fill');
+    const $inputOverlay = document.getElementById('input-overlay');
+    const $overlay     = document.getElementById('completion-overlay');
+    const $prevBtn     = document.getElementById('prev-btn');
+    const $pauseBtn    = document.getElementById('pause-btn');
+    const $nextBtn     = document.getElementById('next-btn');
+    const $dismissBtn  = document.getElementById('dismiss-btn');
+    const $translationBn = document.getElementById('translation-bn');
+    const $langBtns    = document.querySelectorAll('.lang-btn');
+
+    // ── Language ──────────────────────────────────────────────────────────────
+    function applyLang(lang) {
+      state.lang = lang;
+      localStorage.setItem('duaLang', lang);
+      $langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      if (lang === 'bn') {
+        $translation.hidden = true;
+        $translationBn.removeAttribute('hidden');
+      } else {
+        $translation.hidden = false;
+        $translationBn.setAttribute('hidden', '');
+      }
+      renderDua(state.currentIndex);
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+    function renderDua(index) {
+      const d = DUAS[index];
+      $duaNumber.textContent = `${index + 1} / ${DUAS.length}`;
+      $badge.textContent = d.context;
+      $arabic.textContent = d.arabic;
+      $translit.textContent = d.transliteration;
+      $translation.textContent = d.translation;
+      $translationBn.textContent = d.translation_bn;
+      $virtue.textContent = d.virtue;
+    }
+
+    function advanceDua(direction) {
+      state.currentIndex = (state.currentIndex + direction + DUAS.length) % DUAS.length;
+      renderDua(state.currentIndex);
+      resetTimer();
+    }
+
+    // ── Timer ─────────────────────────────────────────────────────────────────
+    function resetTimer() {
+      state.timerProgress = 0;
+      $timerFill.style.width = '0%';
+    }
+
+    function startTimer() {
+      clearInterval(state.timerInterval);
+      const tickMs = 100;
+      const totalTicks = state.DUA_DURATION_MS / tickMs;
+      state.timerInterval = setInterval(() => {
+        if (state.paused || state.needsInput) return;
+        state.timerProgress += (100 / totalTicks);
+        $timerFill.style.width = Math.min(state.timerProgress, 100) + '%';
+        if (state.timerProgress >= 100) {
+          advanceDua(1);
+        }
+      }, tickMs);
+    }
+
+    // ── Status polling ────────────────────────────────────────────────────────
+    async function pollStatus() {
+      try {
+        const res = await fetch('/status.json?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('not ok');
+        const data = await res.json();
+
+        if (data.done === true && !state.workDone) {
+          state.workDone = true;
+          state.needsInput = false;
+          onWorkComplete();
+        } else if (data.done === false && state.workDone) {
+          state.workDone = false;
+          state.needsInput = false;
+          onWorkReset();
+        } else if (data.needsInput === true && !state.needsInput) {
+          state.needsInput = true;
+          onNeedsInput();
+        } else if (data.needsInput === false && state.needsInput) {
+          state.needsInput = false;
+          $inputOverlay.setAttribute('hidden', '');
+          setStatusWaiting();
+        } else if (data.done === false && !state.workDone && !state.needsInput) {
+          setStatusWaiting();
+        }
+      } catch {
+        setStatusOffline();
+      }
+    }
+
+    function setStatusWaiting() {
+      $statusDot.className = 'waiting';
+      $statusText.className = '';
+      $statusText.textContent = 'Waiting for Claude to start...';
+      $statusBar.className = '';
+      $duaCard.className = '';
+    }
+
+    function setStatusOffline() {
+      $statusDot.className = 'offline';
+      $statusText.className = 'offline';
+      $statusText.textContent = 'Offline — run npm run dev to enable detection';
+      $statusBar.className = 'is-offline';
+    }
+
+    // ── Needs input ───────────────────────────────────────────────────────────
+    function onNeedsInput() {
+      $statusDot.className = 'needs-input';
+      $statusText.className = 'needs-input';
+      $statusText.textContent = 'Claude needs your approval — switch back!';
+      $statusBar.className = 'needs-input';
+      $duaCard.className = '';
+      $inputOverlay.removeAttribute('hidden');
+      playAlertChime();
+    }
+
+    function playAlertChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [[880, 0], [660, 0.18]].forEach(([freq, delay]) => {
+          const osc  = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+          gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + delay + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.6);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + 0.6);
+        });
+      } catch { /* silent fallback */ }
+    }
+
+    // ── Work complete ─────────────────────────────────────────────────────────
+    function onWorkComplete() {
+      $statusDot.className = 'done';
+      $statusText.className = 'done';
+      $statusText.textContent = 'Work Complete — take your time';
+      $statusBar.className = 'is-done';
+      $duaCard.className = 'done';
+      $overlay.removeAttribute('hidden');
+      playCompletionTone();
+    }
+
+    function onWorkReset() {
+      $overlay.setAttribute('hidden', '');
+      $inputOverlay.setAttribute('hidden', '');
+      $duaCard.className = '';
+      setStatusWaiting();
+    }
+
+    function playCompletionTone() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [[329.63, 0], [415.30, 0.45], [523.25, 0.9]].forEach(([freq, delay]) => {
+          const osc  = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+          gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + delay + 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 1.0);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + 1.0);
+        });
+      } catch { /* AudioContext blocked — silent fallback */ }
+    }
+
+    // ── Event listeners ───────────────────────────────────────────────────────
+    $langBtns.forEach(btn => {
+      btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+    });
+
+    $prevBtn.addEventListener('click', () => advanceDua(-1));
+    $nextBtn.addEventListener('click', () => advanceDua(1));
+
+    $pauseBtn.addEventListener('click', () => {
+      state.paused = !state.paused;
+      $pauseBtn.textContent = state.paused ? '▶ Resume' : '⏸ Pause';
+      $pauseBtn.classList.toggle('paused', state.paused);
+    });
+
+    $dismissBtn.addEventListener('click', () => {
+      $overlay.setAttribute('hidden', '');
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    applyLang(state.lang);
+    startTimer();
+    pollStatus();
+    state.pollInterval = setInterval(pollStatus, 2000);
+  </script>
+</body>
+</html>
