@@ -546,6 +546,40 @@
       }
     ];
 
+    // ── UI Translations ───────────────────────────────────────────────────────
+    const UI = {
+      en: {
+        waiting:        'Waiting for Claude to start...',
+        offline:        'Offline — run npm run dev to enable detection',
+        needsInput:     'Claude needs your approval — switch back!',
+        workDone:       'Work Complete — take your time',
+        pause:          '⏸ Pause',
+        resume:         '▶ Resume',
+        prev:           '← Prev',
+        next:           'Next →',
+        inputTitle:     'Your Approval Needed',
+        inputBody:      'Claude has paused and is waiting for you to approve a command. Switch back to the terminal to continue.',
+        doneTitle:      'Work Complete',
+        doneBody:       'Claude has finished. Please take your time with the current dua — there is no rush to close.',
+        dismiss:        "I'm Done Reading",
+      },
+      bn: {
+        waiting:        'ক্লড শুরু হওয়ার অপেক্ষায়...',
+        offline:        'অফলাইন — সনাক্তকরণ চালু করতে npm run dev চালান',
+        needsInput:     'ক্লডের আপনার অনুমোদন দরকার — টার্মিনালে ফিরুন!',
+        workDone:       'কাজ সম্পন্ন — সময় নিন',
+        pause:          '⏸ বিরতি',
+        resume:         '▶ চালু করুন',
+        prev:           '← আগের',
+        next:           'পরের →',
+        inputTitle:     'আপনার অনুমোদন দরকার',
+        inputBody:      'ক্লড থেমে গেছে এবং একটি কমান্ড অনুমোদনের জন্য অপেক্ষা করছে। চালিয়ে যেতে টার্মিনালে ফিরে যান।',
+        doneTitle:      'কাজ সম্পন্ন',
+        doneBody:       'ক্লড কাজ শেষ করেছে। বর্তমান দোয়া পড়তে সময় নিন — তাড়াহুড়া করার প্রয়োজন নেই।',
+        dismiss:        'পড়া শেষ হয়েছে',
+      }
+    };
+
     // ── State ─────────────────────────────────────────────────────────────────
     const state = {
       currentIndex: 0,
@@ -560,51 +594,74 @@
     };
 
     // ── DOM refs ──────────────────────────────────────────────────────────────
-    const $statusBar   = document.getElementById('status-bar');
-    const $statusDot   = document.getElementById('status-dot');
-    const $statusText  = document.getElementById('status-text');
-    const $duaCard     = document.getElementById('dua-card');
-    const $duaNumber   = document.getElementById('dua-number');
-    const $badge       = document.getElementById('dua-context-badge');
-    const $arabic      = document.getElementById('arabic-text');
-    const $translit    = document.getElementById('transliteration');
-    const $translation = document.getElementById('translation');
-    const $virtue      = document.getElementById('virtue-text');
-    const $timerFill   = document.getElementById('timer-fill');
-    const $inputOverlay = document.getElementById('input-overlay');
-    const $overlay     = document.getElementById('completion-overlay');
-    const $prevBtn     = document.getElementById('prev-btn');
-    const $pauseBtn    = document.getElementById('pause-btn');
-    const $nextBtn     = document.getElementById('next-btn');
-    const $dismissBtn  = document.getElementById('dismiss-btn');
+    const $statusBar    = document.getElementById('status-bar');
+    const $statusDot    = document.getElementById('status-dot');
+    const $statusText   = document.getElementById('status-text');
+    const $duaCard      = document.getElementById('dua-card');
+    const $duaNumber    = document.getElementById('dua-number');
+    const $badge        = document.getElementById('dua-context-badge');
+    const $arabic       = document.getElementById('arabic-text');
+    const $translit     = document.getElementById('transliteration');
+    const $translation  = document.getElementById('translation');
     const $translationBn = document.getElementById('translation-bn');
-    const $langBtns    = document.querySelectorAll('.lang-btn');
+    const $virtue       = document.getElementById('virtue-text');
+    const $timerFill    = document.getElementById('timer-fill');
+    const $inputOverlay = document.getElementById('input-overlay');
+    const $inputTitle   = document.querySelector('#input-card h2');
+    const $inputBody    = document.querySelector('#input-card p');
+    const $overlay      = document.getElementById('completion-overlay');
+    const $doneTitle    = document.querySelector('#completion-card h2');
+    const $doneBody     = document.querySelector('#completion-card p');
+    const $prevBtn      = document.getElementById('prev-btn');
+    const $pauseBtn     = document.getElementById('pause-btn');
+    const $nextBtn      = document.getElementById('next-btn');
+    const $dismissBtn   = document.getElementById('dismiss-btn');
+    const $langBtns     = document.querySelectorAll('.lang-btn');
 
     // ── Language ──────────────────────────────────────────────────────────────
+    function t(key) { return UI[state.lang][key]; }
+
     function applyLang(lang) {
       state.lang = lang;
       localStorage.setItem('duaLang', lang);
       $langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+
       if (lang === 'bn') {
-        $translation.hidden = true;
+        $translation.setAttribute('hidden', '');
         $translationBn.removeAttribute('hidden');
       } else {
-        $translation.hidden = false;
+        $translation.removeAttribute('hidden');
         $translationBn.setAttribute('hidden', '');
       }
+
+      // Update all static UI strings
+      $prevBtn.textContent    = t('prev');
+      $nextBtn.textContent    = t('next');
+      $pauseBtn.textContent   = state.paused ? t('resume') : t('pause');
+      $dismissBtn.textContent = t('dismiss');
+      $inputTitle.textContent = t('inputTitle');
+      $inputBody.textContent  = t('inputBody');
+      $doneTitle.textContent  = t('doneTitle');
+      $doneBody.textContent   = t('doneBody');
+
+      // Re-apply current status message in new language
+      if (state.workDone)       { $statusText.textContent = t('workDone'); }
+      else if (state.needsInput){ $statusText.textContent = t('needsInput'); }
+      else                      { $statusText.textContent = t('waiting'); }
+
       renderDua(state.currentIndex);
     }
 
     // ── Render ────────────────────────────────────────────────────────────────
     function renderDua(index) {
       const d = DUAS[index];
-      $duaNumber.textContent = `${index + 1} / ${DUAS.length}`;
-      $badge.textContent = d.context;
-      $arabic.textContent = d.arabic;
-      $translit.textContent = d.transliteration;
+      $duaNumber.textContent   = `${index + 1} / ${DUAS.length}`;
+      $badge.textContent       = d.context;
+      $arabic.textContent      = d.arabic;
+      $translit.textContent    = d.transliteration;
       $translation.textContent = d.translation;
       $translationBn.textContent = d.translation_bn;
-      $virtue.textContent = d.virtue;
+      $virtue.textContent      = d.virtue;
     }
 
     function advanceDua(direction) {
@@ -666,7 +723,7 @@
     function setStatusWaiting() {
       $statusDot.className = 'waiting';
       $statusText.className = '';
-      $statusText.textContent = 'Waiting for Claude to start...';
+      $statusText.textContent = t('waiting');
       $statusBar.className = '';
       $duaCard.className = '';
     }
@@ -674,7 +731,7 @@
     function setStatusOffline() {
       $statusDot.className = 'offline';
       $statusText.className = 'offline';
-      $statusText.textContent = 'Offline — run npm run dev to enable detection';
+      $statusText.textContent = t('offline');
       $statusBar.className = 'is-offline';
     }
 
@@ -682,7 +739,7 @@
     function onNeedsInput() {
       $statusDot.className = 'needs-input';
       $statusText.className = 'needs-input';
-      $statusText.textContent = 'Claude needs your approval — switch back!';
+      $statusText.textContent = t('needsInput');
       $statusBar.className = 'needs-input';
       $duaCard.className = '';
       $inputOverlay.removeAttribute('hidden');
@@ -712,7 +769,7 @@
     function onWorkComplete() {
       $statusDot.className = 'done';
       $statusText.className = 'done';
-      $statusText.textContent = 'Work Complete — take your time';
+      $statusText.textContent = t('workDone');
       $statusBar.className = 'is-done';
       $duaCard.className = 'done';
       $overlay.removeAttribute('hidden');
@@ -755,7 +812,7 @@
 
     $pauseBtn.addEventListener('click', () => {
       state.paused = !state.paused;
-      $pauseBtn.textContent = state.paused ? '▶ Resume' : '⏸ Pause';
+      $pauseBtn.textContent = state.paused ? t('resume') : t('pause');
       $pauseBtn.classList.toggle('paused', state.paused);
     });
 
