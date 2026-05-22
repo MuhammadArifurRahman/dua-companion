@@ -18,8 +18,12 @@ switch (command) {
   case 'status':
     require('../lib/server.js').status();
     break;
+  case 'remove':
+  case 'uninstall':
+    require('../lib/remove.js')(args);
+    break;
   default:
-    console.log('Usage: dua-companion <init|start|stop|status>');
+    console.log('Usage: dua-companion <init|start|stop|status|remove>');
     if (command) console.log(`Unknown command: ${command}`);
     process.exit(command ? 1 : 0);
 }
