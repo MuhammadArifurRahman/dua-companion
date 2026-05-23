@@ -2,50 +2,32 @@
 
 Islamic dua companion for Claude Code — displays duas while Claude works on your projects.
 
-## Before You Start
-
-**All plugin files stay in `.claude/` folder** — your project root stays clean. The `.claude/` directory is Claude Code's configuration folder and won't interfere with your project files.
-
-**Installation takes 30 seconds:**
-- From git URL: `npx dua-companion init https://github.com/user/my-project.git`
-- Existing project: `npx dua-companion init`
-
-That's it! 🎉
-
 ## Features
 
 - 🕌 Islamic duas display while Claude is working
 - ⚡ Automatic startup — no manual configuration needed
 - 📁 Clean project root — all files in `.claude/`
-- 🔗 One-command setup with git URLs
 - 🛠️ Works with any Claude Code project
 - 🚫 Easy removal — one command uninstalls completely
 
-## Quick Start
+## Installation (30 seconds)
 
-### 1. Initialize an existing project
-
-If you're already in a project directory:
+All plugin files stay in `.claude/` — your project root stays clean. The `.claude/` directory is Claude Code's configuration folder and won't interfere with your project files.
 
 ```bash
-cd ~/Projects/my-project
-npx dua-companion init
+# 1. Clone the repository
+git clone https://github.com/MuhammadArifurRahman/dua-companion.git
+cd dua-companion
+
+# 2. Install globally
+npm install -g .
+
+# 3. Go to your project and initialize
+cd ~/my-project
+dua-companion init
 ```
 
-This will copy all plugin files to `.claude/dua-companion/` in your current project.
-
-### 2. Clone and initialize in one command
-
-If you have a git repository URL:
-
-```bash
-npx dua-companion init https://github.com/MuhammadArifurRahman/dua-companion.git
-```
-
-This will:
-1. Clone the repository into `./dua-companion/`
-2. Copy all plugin files to `.claude/dua-companion/`
-3. Initialize hooks and show next steps
+That's it! 🎉
 
 ## How It Works
 
@@ -55,13 +37,26 @@ Once initialized, dua-companion:
 - Uses port 5190 — works with any dev server configuration
 - Hooks into Claude Code's lifecycle (PreToolUse, PermissionRequest, UserPromptSubmit, Stop)
 
+**Port Sharing:**
+- Only one dua-companion instance can run on port 5190 at a time
+- If you try to start it in another project while one is running, you'll see:
+  ```
+  ⚠️  Port 5190 is already in use by dua-companion in:
+     /path/to/other-project
+  
+  You can only run dua-companion in one project at a time.
+  Stop the other instance with: dua-companion stop
+  ```
+- Use `dua-companion stop` to cleanly stop the current instance
+- Use `dua-companion status` to see which project is currently running
+
 ## Project Structure
 
 ```
 dua-companion/
 ├── bin/dua-companion.js     # CLI entry point
 ├── lib/
-│   ├── init.js              # Initialize projects + clone from git
+│   ├── init.js              # Initialize projects
 │   ├── remove.js            # Uninstall from projects
 │   ├── server.js            # HTTP server on port 5190
 │   └── merge-settings.js    # Safe settings.json merging
@@ -69,7 +64,7 @@ dua-companion/
     └── dua-companion.html   # Web UI
 ```
 
-## What init creates
+## What `init` Creates
 
 All files stay in `.claude/` — your project root stays clean. The `.claude/` directory is where Claude Code stores all configuration and extensions.
 
@@ -98,33 +93,32 @@ my-project/                  (your actual project)
 
 ## Commands
 
-### Initialize
+### Initialize an existing project
 
 ```bash
-# Current directory
-npx dua-companion init
-
-# From git URL (clones + initializes)
-npx dua-companion init https://github.com/user/my-project.git
+cd ~/my-project
+dua-companion init
 ```
+
+This will copy all plugin files to `.claude/dua-companion/` and set up hooks in `.claude/settings.json`.
 
 ### Start/Stop
 
 ```bash
 # Start the server manually
-npx dua-companion start
+dua-companion start
 
 # Stop the background server
-npx dua-companion stop
+dua-companion stop
 
 # Check server status
-npx dua-companion status
+dua-companion status
 ```
 
 ### Remove
 
 ```bash
-npx dua-companion remove
+dua-companion remove
 ```
 
 This will:
@@ -135,104 +129,21 @@ This will:
 Or stop the server without removing:
 
 ```bash
-npx dua-companion stop
+dua-companion stop
 ```
 
-## Installation
+## Manual Installation (Advanced)
 
-Install globally:
-
-```bash
-npm install -g dua-companion
-```
-
-Or use with npx (no installation needed):
-
-```bash
-npx dua-companion init
-```
-
-## Installing from Git
-
-The most powerful feature: **clone a project and install dua-companion in one command**. No manual folder creation or configuration needed.
-
-### Option 1: Clone from Git URL (Recommended)
-
-This is the simplest way to get a project set up with dua-companion:
-
-```bash
-npx dua-companion init https://github.com/user/my-project.git
-```
-
-**What happens automatically:**
-
-1. **Clones** the repository → creates `./my-project/` directory in current location
-2. **Copies plugin files** → creates `.claude/dua-companion/` inside the cloned project
-3. **Adds hooks** → updates `.claude/settings.json` with dua-companion lifecycle hooks
-4. **Shows next steps** → ready to open in Claude Code
-
-**Result:**
-```
-~/my-location/
-└── my-project/                (cloned from git)
-    └── .claude/
-        ├── dua-companion/     (plugin files copied here)
-        │   ├── server.js
-        │   ├── dua-companion.html
-        │   └── status.json
-        └── settings.json      (hooks added automatically)
-```
-
-### Option 2: Existing Project Directory
-
-If the project is already cloned:
+If you prefer not to install globally, you can clone into `.claude/` and run commands locally:
 
 ```bash
 cd ~/my-project
-npx dua-companion init
+mkdir -p .claude
+cd .claude
+git clone https://github.com/MuhammadArifurRahman/dua-companion.git
+cd ..
+node .claude/dua-companion/bin/dua-companion.js init
 ```
-
-**What happens:**
-
-1. **Copies plugin files** → creates `.claude/dua-companion/`
-2. **Adds hooks** → updates `.claude/settings.json`
-3. **Ready to use** → open project in Claude Code
-
-### Option 3: Manual Git Clone + Init
-
-If you prefer more control:
-
-```bash
-git clone https://github.com/user/my-project.git
-cd my-project
-npx dua-companion init
-```
-
-This is equivalent to Option 1, but you can inspect the repo before initializing.
-
-## Supported Git URLs
-
-```bash
-# HTTPS (recommended)
-npx dua-companion init https://github.com/user/my-project.git
-
-# SSH (if you have SSH keys configured)
-npx dua-companion init git@github.com:user/my-project.git
-
-# GitHub shorthand (HTTPS without .git)
-npx dua-companion init https://github.com/user/my-project
-```
-
-## Installation Checklist
-
-When installing from git, verify these are created:
-
-- [ ] `.claude/dua-companion/server.js` ✓
-- [ ] `.claude/dua-companion/dua-companion.html` ✓
-- [ ] `.claude/dua-companion/status.json` ✓
-- [ ] `.claude/settings.json` contains dua-companion hooks ✓
-
-If any files are missing, run `npx dua-companion init` again in the project directory.
 
 ## Verify Installation
 
@@ -256,21 +167,31 @@ Or simply open the project in Claude Code — dua-companion starts automatically
 
 ## Troubleshooting
 
-**"Directory already exists" error**
-- The clone target already exists. Remove it first or use a different directory.
+**"dua-companion: command not found"**
+- Make sure you ran `npm install -g .` in the dua-companion directory
+- Verify: `which dua-companion`
+
+**"Port 5190 is already in use" error**
+- Another dua-companion instance is running in a different project
+- Check which project: `dua-companion status`
+- Stop it: `dua-companion stop`
+- Then start a new instance in your project
 
 **Files not created in `.claude/`**
-- Make sure you ran the command from inside the project directory (or from the directory where you want to clone)
-- Run `npx dua-companion init` again
+- Make sure you're in your project directory: `pwd`
+- Run `dua-companion init` again
+- Check file permissions: `ls -la .claude/`
 
 **Server not starting**
-- Check if port 5190 is in use: `lsof -i :5190`
-- Manually start: `npx dua-companion start`
-- Check status: `npx dua-companion status`
+- Check port status: `dua-companion status`
+- If running elsewhere, stop it first: `dua-companion stop`
+- Manually start: `dua-companion start`
 
 **Hooks not working in Claude Code**
-- Open a project in Claude Code that has `.claude/settings.json` with dua-companion hooks
+- Verify hooks exist: `cat .claude/settings.json | grep dua-companion`
+- Check server is running: `dua-companion status`
 - The UI should appear automatically on first tool use
+- Try reopening the project in Claude Code
 
 ## Requirements
 
