@@ -778,22 +778,34 @@
           $projectName.textContent = `📁 ${data.projectName}`;
         }
 
+        // Handle work completion
         if (data.done === true && !state.workDone) {
           state.workDone = true;
           state.needsInput = false;
           onWorkComplete();
-        } else if (data.done === false && state.workDone) {
+        }
+        // Handle work reset (new task started)
+        else if (data.done === false && state.workDone) {
           state.workDone = false;
           state.needsInput = false;
           onWorkReset();
-        } else if (data.needsInput === true && !state.needsInput) {
+        }
+        // Handle approval request
+        else if (data.needsInput === true && !state.needsInput) {
           state.needsInput = true;
           onNeedsInput();
-        } else if (data.needsInput === false && state.needsInput) {
+        }
+        // Handle approval given (close the approval modal)
+        else if (data.needsInput === false && state.needsInput) {
           state.needsInput = false;
           $inputOverlay.setAttribute('hidden', '');
-          setStatusWaiting();
-        } else if (data.done === false && !state.workDone && !state.needsInput) {
+          // If work is still ongoing, show waiting status
+          if (data.done === false) {
+            setStatusWaiting();
+          }
+        }
+        // Normal working state
+        else if (data.done === false && !state.workDone && !state.needsInput) {
           setStatusWaiting();
         }
       } catch {
@@ -848,6 +860,7 @@
 
     // ── Work complete ─────────────────────────────────────────────────────────
     function onWorkComplete() {
+      $inputOverlay.setAttribute('hidden', '');
       $statusDot.className = 'done';
       $statusText.className = 'done';
       $statusText.textContent = t('workDone');
