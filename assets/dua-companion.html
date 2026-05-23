@@ -408,6 +408,7 @@
   <div id="status-bar">
     <span id="status-dot" class="waiting"></span>
     <span id="status-text">Waiting for Claude to start...</span>
+    <span id="project-name" style="font-size: 0.75rem; color: var(--text-muted); margin-left: auto; margin-right: 16px;"></span>
     <div id="lang-toggle">
       <button class="lang-btn active" data-lang="en">EN</button>
       <button class="lang-btn" data-lang="bn">বাং</button>
@@ -597,6 +598,7 @@
     const $statusBar    = document.getElementById('status-bar');
     const $statusDot    = document.getElementById('status-dot');
     const $statusText   = document.getElementById('status-text');
+    const $projectName  = document.getElementById('project-name');
     const $duaCard      = document.getElementById('dua-card');
     const $duaNumber    = document.getElementById('dua-number');
     const $badge        = document.getElementById('dua-context-badge');
@@ -696,6 +698,11 @@
         const res = await fetch('/status.json?t=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) throw new Error('not ok');
         const data = await res.json();
+
+        // Display project name if available
+        if (data.projectName) {
+          $projectName.textContent = `📁 ${data.projectName}`;
+        }
 
         if (data.done === true && !state.workDone) {
           state.workDone = true;

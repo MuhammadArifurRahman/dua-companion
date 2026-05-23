@@ -33,22 +33,23 @@ That's it! 🎉
 
 Once initialized, dua-companion:
 - Starts automatically on Claude's first tool use (no manual `start` needed)
-- Displays the UI at `http://localhost:5190/dua-companion.html`
-- Uses port 5190 — works with any dev server configuration
+- Assigns each project its own unique port (in the range 5200-5999)
+- Displays the UI at the project's unique port (e.g., `http://localhost:5234/dua-companion.html`)
 - Hooks into Claude Code's lifecycle (PreToolUse, PermissionRequest, UserPromptSubmit, Stop)
 
-**Port Sharing:**
-- Only one dua-companion instance can run on port 5190 at a time
-- If you try to start it in another project while one is running, you'll see:
-  ```
-  ⚠️  Port 5190 is already in use by dua-companion in:
-     /path/to/other-project
-  
-  You can only run dua-companion in one project at a time.
-  Stop the other instance with: dua-companion stop
-  ```
-- Use `dua-companion stop` to cleanly stop the current instance
-- Use `dua-companion status` to see which project is currently running
+**Per-Project Ports:**
+- Each project gets a unique port based on its directory path
+- This means you can run multiple dua-companion instances simultaneously in different projects
+- The port is stored in `.claude/dua-companion/config.json`
+- The status bar shows your project name (📁 project-name) so you always know which project you're viewing
+
+**Example:**
+```
+Project A → http://localhost:5234/dua-companion.html
+Project B → http://localhost:5456/dua-companion.html
+```
+
+Both can run at the same time without conflicts!
 
 ## Project Structure
 
@@ -76,13 +77,24 @@ my-project/                  (your actual project)
 │
 └── .claude/                 (Claude Code configuration — git-ignored)
     ├── dua-companion/       (all dua-companion files here)
+    │   ├── config.json      # Project port + name (auto-generated)
     │   ├── server.js        # HTTP server (starts automatically)
     │   ├── dua-companion.html # Web UI interface
-    │   └── status.json      # Working state (auto-managed)
+    │   ├── status.json      # Working state (auto-managed)
+    │   ├── .pid             # Process ID (auto-managed)
+    │   └── .metadata.json   # Server metadata (auto-managed)
     │
     └── settings.json        # Claude Code config
                             # dua-companion hooks added here
                             # your other settings preserved
+```
+
+**config.json example:**
+```json
+{
+  "port": 5234,
+  "projectName": "my-project"
+}
 ```
 
 **Why `.claude/`?**
@@ -171,11 +183,10 @@ Or simply open the project in Claude Code — dua-companion starts automatically
 - Make sure you ran `npm install -g .` in the dua-companion directory
 - Verify: `which dua-companion`
 
-**"Port 5190 is already in use" error**
-- Another dua-companion instance is running in a different project
-- Check which project: `dua-companion status`
-- Stop it: `dua-companion stop`
-- Then start a new instance in your project
+**Can't access the UI at the port shown**
+- Get the actual port: `cat .claude/dua-companion/config.json`
+- Or run: `dua-companion status`
+- Open: `http://localhost:PORT/dua-companion.html` where PORT is from config.json
 
 **Files not created in `.claude/`**
 - Make sure you're in your project directory: `pwd`
@@ -183,15 +194,16 @@ Or simply open the project in Claude Code — dua-companion starts automatically
 - Check file permissions: `ls -la .claude/`
 
 **Server not starting**
-- Check port status: `dua-companion status`
-- If running elsewhere, stop it first: `dua-companion stop`
+- Check status: `dua-companion status`
 - Manually start: `dua-companion start`
+- If port is in use: `lsof -i :5200-5999` to find which port is taken
 
 **Hooks not working in Claude Code**
 - Verify hooks exist: `cat .claude/settings.json | grep dua-companion`
 - Check server is running: `dua-companion status`
 - The UI should appear automatically on first tool use
 - Try reopening the project in Claude Code
+- Check that port is correct in `.claude/dua-companion/config.json`
 
 ## Requirements
 
