@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//private/tmp/**)",
+      "Bash(node /Users/mac/Sites/localhost/claude-plugin/dua-companion/bin/dua-companion.js init https://github.com/MuhammadArifurRahman/dua-companion.git)"
+    ]
+  }
+}

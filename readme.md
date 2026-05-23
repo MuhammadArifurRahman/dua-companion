@@ -20,12 +20,15 @@
 
   ## Usage
 
-  To use it in any new project:
-  cd ~/Projects/my-new-project
-  node ~/Projects/dua-companion/bin/dua-companion.js init
+  ### Initialize an existing project directory
 
-  Once published to npm it becomes:
-  npx dua-companion init
+    npx dua-companion init
+
+  ### Clone and initialize from git URL
+
+    npx dua-companion init https://github.com/user/my-project.git
+
+  This will clone the repository and initialize dua-companion in one command.
 
   The server starts automatically on Claude's first tool use — no manual
   npm run dev needed. Port 5190 is dedicated so it works in any project
