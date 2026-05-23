@@ -238,6 +238,59 @@
       line-height: 1.5;
     }
 
+    .references {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .reference-link {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      background: rgba(212, 168, 67, 0.12);
+      border: 1px solid rgba(212, 168, 67, 0.3);
+      border-radius: 12px;
+      color: var(--gold-light);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .reference-link:hover {
+      background: rgba(212, 168, 67, 0.22);
+      border-color: var(--gold);
+      text-decoration: none;
+    }
+
+    .reference-link:active {
+      transform: scale(0.98);
+    }
+
+    .reference-link.hadith {
+      background: rgba(74, 222, 128, 0.12);
+      border-color: rgba(74, 222, 128, 0.3);
+      color: var(--green-light);
+    }
+
+    .reference-link.hadith:hover {
+      background: rgba(74, 222, 128, 0.22);
+      border-color: var(--green);
+    }
+
+    .reference-link.quran {
+      background: rgba(251, 146, 60, 0.12);
+      border-color: rgba(251, 146, 60, 0.3);
+      color: var(--orange-light);
+    }
+
+    .reference-link.quran:hover {
+      background: rgba(251, 146, 60, 0.22);
+      border-color: var(--orange);
+    }
+
     /* ── Timer Bar ── */
     #timer-track {
       max-width: 720px;
@@ -501,6 +554,7 @@
         <div id="translation"></div>
         <div id="translation-bn" hidden></div>
         <div id="virtue-text"></div>
+        <div id="references-container" class="references"></div>
       </div>
       <div id="timer-track">
         <div id="timer-fill"></div>
@@ -545,7 +599,10 @@
         transliteration: 'Rabbi zidnī \'ilmā',
         translation: '"My Lord, increase me in knowledge."',
         translation_bn: '"হে আমার রব, আমার জ্ঞান বৃদ্ধি করুন।"',
-        virtue: 'Quran 20:114 — Recite when starting any work or learning session.'
+        virtue: 'Quran 20:114 — Recite when starting any work or learning session.',
+        references: [
+          { type: 'quran', surah: 20, ayah: 114, text: 'Quran 20:114', url: 'https://quran.com/20/114' }
+        ]
       },
       {
         context: 'For Ease',
@@ -553,7 +610,10 @@
         transliteration: 'Allāhumma lā sahla illā mā ja\'altahu sahlān,\nwa anta taj\'alul-ḥazna idhā shi\'ta sahlā',
         translation: '"O Allah, nothing is easy except what You make easy, and You make the difficult easy if You will."',
         translation_bn: '"হে আল্লাহ, যা আপনি সহজ করেন তা ছাড়া কোনো কিছুই সহজ নয়, এবং আপনি যখন চান কঠিনকেও সহজ করে দেন।"',
-        virtue: 'Ibn Hibban — Recite when facing a hard problem or obstacle.'
+        virtue: 'Ibn Hibban — Recite when facing a hard problem or obstacle.',
+        references: [
+          { type: 'hadith', collection: 'Ibn Hibban', text: 'Ibn Hibban', url: 'https://sunnah.com/ibnhibban' }
+        ]
       },
       {
         context: 'For Patience',
@@ -561,7 +621,10 @@
         transliteration: 'Rabbanā afrigh \'alaynā ṣabran\nwa thabbit aqdāmanā wanṣurnā',
         translation: '"Our Lord, pour upon us patience and plant firmly our feet and give us victory."',
         translation_bn: '"হে আমাদের রব, আমাদের উপর ধৈর্য ঢেলে দিন, আমাদের পা অবিচল রাখুন এবং আমাদের বিজয় দান করুন।"',
-        virtue: 'Quran 2:250 — For steadfastness when work is long and tiring.'
+        virtue: 'Quran 2:250 — For steadfastness when work is long and tiring.',
+        references: [
+          { type: 'quran', surah: 2, ayah: 250, text: 'Quran 2:250', url: 'https://quran.com/2/250' }
+        ]
       },
       {
         context: 'For Forgiveness',
@@ -569,7 +632,10 @@
         transliteration: 'Allāhumma anta rabbī lā ilāha illā anta,\nkhalaqtanī wa anā \'abduk',
         translation: '"O Allah, You are my Lord. There is no god but You. You created me and I am Your servant."',
         translation_bn: '"হে আল্লাহ, আপনি আমার রব। আপনি ছাড়া কোনো ইলাহ নেই। আপনি আমাকে সৃষ্টি করেছেন এবং আমি আপনার বান্দা।"',
-        virtue: 'Bukhari — Sayyid al-Istighfar: the master dua for seeking forgiveness. Best recited morning and evening.'
+        virtue: 'Bukhari — Sayyid al-Istighfar: the master dua for seeking forgiveness. Best recited morning and evening.',
+        references: [
+          { type: 'hadith', collection: 'Sahih Bukhari', text: 'Sahih Bukhari', url: 'https://sunnah.com/bukhari' }
+        ]
       },
       {
         context: 'For Guidance',
@@ -577,7 +643,10 @@
         transliteration: 'Allāhumma-hdinī wa saddidnī',
         translation: '"O Allah, guide me and keep me on the right path."',
         translation_bn: '"হে আল্লাহ, আমাকে হেদায়েত করুন এবং সঠিক পথে অটল রাখুন।"',
-        virtue: 'Muslim — Recite when uncertain about a decision or direction.'
+        virtue: 'Muslim — Recite when uncertain about a decision or direction.',
+        references: [
+          { type: 'hadith', collection: 'Sahih Muslim', text: 'Sahih Muslim', url: 'https://sunnah.com/muslim' }
+        ]
       },
       {
         context: 'For Gratitude',
@@ -585,7 +654,10 @@
         transliteration: 'Allāhumma a\'innī \'alā dhikrika\nwa shukrika wa ḥusni \'ibādatik',
         translation: '"O Allah, help me to remember You, to give thanks to You, and to worship You well."',
         translation_bn: '"হে আল্লাহ, আপনার স্মরণে, কৃতজ্ঞতায় এবং সুন্দর ইবাদতে আমাকে সাহায্য করুন।"',
-        virtue: 'Abu Dawud (authenticated) — Recite after completing a task, as gratitude for tawfiq (ability to act).'
+        virtue: 'Abu Dawud (authenticated) — Recite after completing a task, as gratitude for tawfiq (ability to act).',
+        references: [
+          { type: 'hadith', collection: 'Sunan Abu Dawud', text: 'Sunan Abu Dawud', url: 'https://sunnah.com/abudawud' }
+        ]
       },
       {
         context: 'For Anxiety',
@@ -593,7 +665,10 @@
         transliteration: 'Allāhumma innī a\'ūdhu bika minal-hammi wal-ḥazani\nwal-\'ajzi wal-kasali',
         translation: '"O Allah, I seek refuge in You from worry and grief, from incapacity and laziness."',
         translation_bn: '"হে আল্লাহ, আমি দুশ্চিন্তা ও দুঃখ থেকে, অক্ষমতা ও অলসতা থেকে আপনার কাছে আশ্রয় চাই।"',
-        virtue: 'Bukhari — Recite when feeling overwhelmed, anxious, or mentally blocked.'
+        virtue: 'Bukhari — Recite when feeling overwhelmed, anxious, or mentally blocked.',
+        references: [
+          { type: 'hadith', collection: 'Sahih Bukhari', text: 'Sahih Bukhari', url: 'https://sunnah.com/bukhari' }
+        ]
       },
       {
         context: 'Tawakkul (Reliance)',
@@ -601,7 +676,10 @@
         transliteration: 'Ḥasbunallāhu wa ni\'mal-wakīl',
         translation: '"Allah is sufficient for us, and He is the best disposer of affairs."',
         translation_bn: '"আল্লাহই আমাদের জন্য যথেষ্ট এবং তিনি কতই না উত্তম কার্যসম্পাদক।"',
-        virtue: 'Quran 3:173 — Said by Ibrahim (AS). Recite when releasing control and trusting the outcome to Allah.'
+        virtue: 'Quran 3:173 — Said by Ibrahim (AS). Recite when releasing control and trusting the outcome to Allah.',
+        references: [
+          { type: 'quran', surah: 3, ayah: 173, text: 'Quran 3:173', url: 'https://quran.com/3/173' }
+        ]
       },
       {
         context: 'For Repentance',
@@ -609,7 +687,10 @@
         transliteration: 'Rabbanā ẓalamnā anfusanā,\nwa il-lam taghfir lanā wa tarḥamnā,\nlanakūnanna minal-khāsirīn',
         translation: '"Our Lord, we have wronged ourselves. If You do not forgive us and have mercy upon us, we will surely be among the losers."',
         translation_bn: '"হে আমাদের রব, আমরা নিজেদের উপর জুলুম করেছি। যদি আপনি আমাদের ক্ষমা না করেন এবং দয়া না করেন, তবে নিশ্চয়ই আমরা ক্ষতিগ্রস্তদের অন্তর্ভুক্ত হব।"',
-        virtue: 'Quran 7:23 — The Dua of Adam (AS). Recite whenever you have made an error.'
+        virtue: 'Quran 7:23 — The Dua of Adam (AS). Recite whenever you have made an error.',
+        references: [
+          { type: 'quran', surah: 7, ayah: 23, text: 'Quran 7:23', url: 'https://quran.com/7/23' }
+        ]
       },
       {
         context: 'Evening / Closing',
@@ -617,7 +698,10 @@
         transliteration: 'Allāhumma bika amsaynā wa bika aṣbaḥnā,\nwa bika naḥyā wa bika namūtu,\nwa ilaykal-maṣīr',
         translation: '"O Allah, by You we enter the evening and by You we enter the morning, by You we live and by You we die, and to You is the return."',
         translation_bn: '"হে আল্লাহ, আপনার নামেই আমরা সন্ধ্যায় প্রবেশ করি এবং আপনার নামেই ভোরে প্রবেশ করি, আপনার দ্বারাই আমরা জীবিত থাকি এবং আপনার দ্বারাই মৃত্যুবরণ করি, এবং আপনার কাছেই আমাদের ফিরে যেতে হবে।"',
-        virtue: 'Tirmidhi — Recite at the close of a work session or in the evening.'
+        virtue: 'Tirmidhi — Recite at the close of a work session or in the evening.',
+        references: [
+          { type: 'hadith', collection: 'Jami\' at-Tirmidhi', text: 'Jami\' at-Tirmidhi', url: 'https://sunnah.com/tirmidhi' }
+        ]
       }
     ];
 
@@ -682,6 +766,7 @@
     const $translation  = document.getElementById('translation');
     const $translationBn = document.getElementById('translation-bn');
     const $virtue       = document.getElementById('virtue-text');
+    const $referencesContainer = document.getElementById('references-container');
     const $timerFill    = document.getElementById('timer-fill');
     const $inputOverlay = document.getElementById('input-overlay');
     const $inputTitle   = document.querySelector('#input-card h2');
@@ -739,6 +824,21 @@
       $translation.textContent = d.translation;
       $translationBn.textContent = d.translation_bn;
       $virtue.textContent      = d.virtue;
+
+      // Render reference links
+      $referencesContainer.innerHTML = '';
+      if (d.references && d.references.length > 0) {
+        d.references.forEach(ref => {
+          const link = document.createElement('a');
+          link.href = ref.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.className = `reference-link ${ref.type}`;
+          link.textContent = ref.text;
+          link.title = `Click to open ${ref.text} on ${ref.type === 'quran' ? 'quran.com' : 'sunnah.com'}`;
+          $referencesContainer.appendChild(link);
+        });
+      }
     }
 
     function advanceDua(direction) {
