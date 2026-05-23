@@ -2,6 +2,16 @@
 
 Islamic dua companion for Claude Code — displays duas while Claude works on your projects.
 
+## Before You Start
+
+**All plugin files stay in `.claude/` folder** — your project root stays clean. The `.claude/` directory is Claude Code's configuration folder and won't interfere with your project files.
+
+**Installation takes 30 seconds:**
+- From git URL: `npx dua-companion init https://github.com/user/my-project.git`
+- Existing project: `npx dua-companion init`
+
+That's it! 🎉
+
 ## Features
 
 - 🕌 Islamic duas display while Claude is working
@@ -61,14 +71,30 @@ dua-companion/
 
 ## What init creates
 
-All files stay in `.claude/` — your project root stays clean:
+All files stay in `.claude/` — your project root stays clean. The `.claude/` directory is where Claude Code stores all configuration and extensions.
 
 ```
-.claude/
-├── dua-companion/
-│   └── status.json        # Working state (auto-managed)
-└── settings.json          # Hooks added (existing keys untouched)
+my-project/                  (your actual project)
+├── src/
+├── package.json
+├── ... (all your project files)
+│
+└── .claude/                 (Claude Code configuration — git-ignored)
+    ├── dua-companion/       (all dua-companion files here)
+    │   ├── server.js        # HTTP server (starts automatically)
+    │   ├── dua-companion.html # Web UI interface
+    │   └── status.json      # Working state (auto-managed)
+    │
+    └── settings.json        # Claude Code config
+                            # dua-companion hooks added here
+                            # your other settings preserved
 ```
+
+**Why `.claude/`?**
+- ✅ Keeps project root clean
+- ✅ Claude Code ignores `.claude/` from git by default
+- ✅ Auto-managed by Claude Code system
+- ✅ No conflicts with your project files
 
 ## Commands
 
@@ -126,23 +152,131 @@ Or use with npx (no installation needed):
 npx dua-companion init
 ```
 
+## Installing from Git
+
+The most powerful feature: **clone a project and install dua-companion in one command**. No manual folder creation or configuration needed.
+
+### Option 1: Clone from Git URL (Recommended)
+
+This is the simplest way to get a project set up with dua-companion:
+
+```bash
+npx dua-companion init https://github.com/user/my-project.git
+```
+
+**What happens automatically:**
+
+1. **Clones** the repository → creates `./my-project/` directory in current location
+2. **Copies plugin files** → creates `.claude/dua-companion/` inside the cloned project
+3. **Adds hooks** → updates `.claude/settings.json` with dua-companion lifecycle hooks
+4. **Shows next steps** → ready to open in Claude Code
+
+**Result:**
+```
+~/my-location/
+└── my-project/                (cloned from git)
+    └── .claude/
+        ├── dua-companion/     (plugin files copied here)
+        │   ├── server.js
+        │   ├── dua-companion.html
+        │   └── status.json
+        └── settings.json      (hooks added automatically)
+```
+
+### Option 2: Existing Project Directory
+
+If the project is already cloned:
+
+```bash
+cd ~/my-project
+npx dua-companion init
+```
+
+**What happens:**
+
+1. **Copies plugin files** → creates `.claude/dua-companion/`
+2. **Adds hooks** → updates `.claude/settings.json`
+3. **Ready to use** → open project in Claude Code
+
+### Option 3: Manual Git Clone + Init
+
+If you prefer more control:
+
+```bash
+git clone https://github.com/user/my-project.git
+cd my-project
+npx dua-companion init
+```
+
+This is equivalent to Option 1, but you can inspect the repo before initializing.
+
 ## Supported Git URLs
 
 ```bash
-# HTTPS
+# HTTPS (recommended)
 npx dua-companion init https://github.com/user/my-project.git
 
-# SSH
+# SSH (if you have SSH keys configured)
 npx dua-companion init git@github.com:user/my-project.git
 
-# GitHub shorthand
+# GitHub shorthand (HTTPS without .git)
 npx dua-companion init https://github.com/user/my-project
 ```
+
+## Installation Checklist
+
+When installing from git, verify these are created:
+
+- [ ] `.claude/dua-companion/server.js` ✓
+- [ ] `.claude/dua-companion/dua-companion.html` ✓
+- [ ] `.claude/dua-companion/status.json` ✓
+- [ ] `.claude/settings.json` contains dua-companion hooks ✓
+
+If any files are missing, run `npx dua-companion init` again in the project directory.
+
+## Verify Installation
+
+After running `init`, verify these files exist in your project:
+
+```bash
+# Check if files were created
+ls -la .claude/dua-companion/
+
+# Should show:
+# server.js
+# dua-companion.html
+# status.json
+
+# Check if hooks were added to settings
+cat .claude/settings.json | grep -i dua-companion
+# Should show hook definitions
+```
+
+Or simply open the project in Claude Code — dua-companion starts automatically on first use.
+
+## Troubleshooting
+
+**"Directory already exists" error**
+- The clone target already exists. Remove it first or use a different directory.
+
+**Files not created in `.claude/`**
+- Make sure you ran the command from inside the project directory (or from the directory where you want to clone)
+- Run `npx dua-companion init` again
+
+**Server not starting**
+- Check if port 5190 is in use: `lsof -i :5190`
+- Manually start: `npx dua-companion start`
+- Check status: `npx dua-companion status`
+
+**Hooks not working in Claude Code**
+- Open a project in Claude Code that has `.claude/settings.json` with dua-companion hooks
+- The UI should appear automatically on first tool use
 
 ## Requirements
 
 - Node.js 18 or higher
 - Git (for cloning repositories)
+- Claude Code (any version)
 
 ## License
 
