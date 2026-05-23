@@ -52,21 +52,26 @@
 
     /* ── Status Bar ── */
     #status-bar {
-      height: var(--status-h);
-      background: var(--surface);
+      height: 44px;
+      background: rgba(22, 27, 34, 0.4);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
-      gap: 10px;
-      transition: border-color 0.4s;
+      padding: 0 20px;
+      gap: 24px;
+      transition: all 0.4s;
       flex-shrink: 0;
+      margin-bottom: 40px;
+      margin-top: 16px;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
     }
-    #status-bar.is-done { border-bottom-color: var(--gold); }
+    #status-bar.is-done { border-bottom-color: var(--gold); background: rgba(212, 168, 67, 0.08); }
     #status-bar.is-offline { border-bottom-color: var(--border); }
     #status-bar.needs-input {
       border-bottom-color: var(--orange);
+      background: rgba(234, 88, 12, 0.08);
       animation: bar-attention 1.2s ease-in-out infinite;
     }
 
@@ -77,27 +82,32 @@
     }
 
     #close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
       background: transparent;
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       color: var(--text-muted);
       border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 1.2rem;
+      padding: 6px 10px;
+      font-size: 1.6rem;
       cursor: pointer;
       transition: background 0.2s, border-color 0.2s, color 0.2s;
       line-height: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
+      z-index: 101;
+      font-weight: 300;
     }
     #close-btn:hover {
-      background: var(--surface-2);
-      border-color: var(--text-muted);
-      color: var(--text);
+      background: rgba(45, 154, 78, 0.1);
+      border-color: var(--green);
+      color: var(--green-light);
     }
-    #close-btn:active { transform: scale(0.95); }
+    #close-btn:active { transform: scale(0.92); }
 
     @keyframes bar-attention {
       0%, 100% { box-shadow: none; }
@@ -146,9 +156,10 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 32px 24px 120px;
+      padding: 20px 32px 32px;
       overflow-y: auto;
       pointer-events: auto;
+      gap: 0;
     }
 
     /* ── Dua Card ── */
@@ -247,15 +258,24 @@
 
     /* ── Navigation ── */
     #nav-controls {
-      height: 80px;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
+      height: 50px;
+      background: rgba(22, 27, 34, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 8px;
       flex-shrink: 0;
       pointer-events: auto;
+      padding: 0 8px;
+      margin-top: 24px;
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+    }
+    #nav-controls:hover {
+      border-color: var(--green);
+      background: rgba(45, 154, 78, 0.05);
     }
 
     .nav-btn {
@@ -394,8 +414,6 @@
 
     /* ── Language Toggle ── */
     #lang-toggle {
-      position: absolute;
-      right: 16px;
       display: flex;
       gap: 4px;
       align-items: center;
@@ -446,7 +464,12 @@
 
   <!-- Viewport Frame -->
   <div id="viewport-frame">
-    <!-- Status Bar -->
+    <!-- Close Button (Lightbox style) -->
+    <button id="close-btn" title="Close">✕</button>
+
+    <!-- Main Content -->
+    <div id="stage">
+        <!-- Status Bar -->
     <div id="status-bar">
       <div id="status-left">
         <span id="status-dot" class="waiting"></span>
@@ -457,11 +480,7 @@
         <button class="lang-btn active" data-lang="en">EN</button>
         <button class="lang-btn" data-lang="bn">বাং</button>
       </div>
-      <button id="close-btn" title="Close">✕</button>
     </div>
-
-    <!-- Main Content -->
-    <div id="stage">
       <!-- Bismillah -->
       <div id="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
       <!-- Dua Card -->
@@ -479,14 +498,15 @@
       <div id="timer-track">
         <div id="timer-fill"></div>
       </div>
-    </div>
-
-    <!-- Navigation -->
+          <!-- Navigation -->
     <div id="nav-controls">
       <button class="nav-btn" id="prev-btn">← Prev</button>
       <button class="nav-btn" id="pause-btn">⏸ Pause</button>
       <button class="nav-btn" id="next-btn">Next →</button>
     </div>
+    </div>
+
+
   </div>
 
   <!-- Needs Input Overlay -->
