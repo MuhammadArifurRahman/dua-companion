@@ -522,6 +522,7 @@
       <div class="input-icon">⚠️</div>
       <h2>Your Approval Needed</h2>
       <p>Claude has paused and is waiting for you to approve a command. Switch back to the terminal to continue.</p>
+      <button id="dismiss-approval-btn" style="margin-top: 20px; background: var(--orange); border: none; color: #0d1117; border-radius: 8px; padding: 10px 20px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">Approved ✓</button>
     </div>
   </div>
 
@@ -799,6 +800,7 @@
         else if (data.needsInput === false && state.needsInput) {
           state.needsInput = false;
           $inputOverlay.setAttribute('hidden', '');
+          onApprovalCleared();
           // If work is still ongoing, show waiting status
           if (data.done === false) {
             setStatusWaiting();
@@ -837,6 +839,16 @@
       $duaCard.className = '';
       $inputOverlay.removeAttribute('hidden');
       playAlertChime();
+
+      // Poll more frequently while waiting for approval (every 500ms instead of 2000ms)
+      clearInterval(state.pollInterval);
+      state.pollInterval = setInterval(pollStatus, 500);
+    }
+
+    function onApprovalCleared() {
+      // Resume normal polling when approval modal is dismissed
+      clearInterval(state.pollInterval);
+      state.pollInterval = setInterval(pollStatus, 2000);
     }
 
     function playAlertChime() {
@@ -917,6 +929,19 @@
     $dismissBtn.addEventListener('click', () => {
       $overlay.setAttribute('hidden', '');
     });
+
+    // Dismiss approval modal when user clicks "Approved ✓" button
+    const $dismissApprovalBtn = document.getElementById('dismiss-approval-btn');
+    if ($dismissApprovalBtn) {
+      $dismissApprovalBtn.addEventListener('click', () => {
+        state.needsInput = false;
+        $inputOverlay.setAttribute('hidden', '');
+        onApprovalCleared();
+        setStatusWaiting();
+        // Force immediate poll to refresh status
+        pollStatus();
+      });
+    }
 
     // ── Init ──────────────────────────────────────────────────────────────────
     applyLang(state.lang);
