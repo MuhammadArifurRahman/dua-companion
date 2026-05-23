@@ -39,19 +39,29 @@
       overflow-x: hidden;
     }
 
+    /* ── Viewport Frame ── */
+    #viewport-frame {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      pointer-events: none;
+    }
+    #viewport-frame > * { pointer-events: auto; }
+
     /* ── Status Bar ── */
     #status-bar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
       height: var(--status-h);
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      padding: 0 16px;
       gap: 10px;
-      z-index: 100;
       transition: border-color 0.4s;
+      flex-shrink: 0;
     }
     #status-bar.is-done { border-bottom-color: var(--gold); }
     #status-bar.is-offline { border-bottom-color: var(--border); }
@@ -59,6 +69,35 @@
       border-bottom-color: var(--orange);
       animation: bar-attention 1.2s ease-in-out infinite;
     }
+
+    #status-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #close-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+    }
+    #close-btn:hover {
+      background: var(--surface-2);
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+    #close-btn:active { transform: scale(0.95); }
 
     @keyframes bar-attention {
       0%, 100% { box-shadow: none; }
@@ -107,8 +146,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: calc(var(--status-h) + 32px) 24px 120px;
-      min-height: 100vh;
+      padding: 32px 24px 120px;
+      overflow-y: auto;
+      pointer-events: auto;
     }
 
     /* ── Dua Card ── */
@@ -207,8 +247,6 @@
 
     /* ── Navigation ── */
     #nav-controls {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
       height: 80px;
       background: var(--surface);
       border-top: 1px solid var(--border);
@@ -216,6 +254,8 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
+      flex-shrink: 0;
+      pointer-events: auto;
     }
 
     .nav-btn {
@@ -394,7 +434,7 @@
       font-size: 1.6rem;
       color: var(--gold);
       text-align: center;
-      padding: calc(var(--status-h) + 16px) 0 8px;
+      padding: 0 0 8px;
       opacity: 0.7;
       direction: rtl;
       letter-spacing: 0.05em;
@@ -404,43 +444,49 @@
 </head>
 <body>
 
-  <!-- Status Bar -->
-  <div id="status-bar">
-    <span id="status-dot" class="waiting"></span>
-    <span id="status-text">Waiting for Claude to start...</span>
-    <span id="project-name" style="font-size: 0.75rem; color: var(--text-muted); margin-left: auto; margin-right: 16px;"></span>
-    <div id="lang-toggle">
-      <button class="lang-btn active" data-lang="en">EN</button>
-      <button class="lang-btn" data-lang="bn">বাং</button>
-    </div>
-  </div>
-
-  <!-- Bismillah -->
-  <div id="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
-
-  <!-- Dua Stage -->
-  <div id="stage">
-    <div id="dua-card">
-      <div id="dua-header">
-        <span id="dua-number">1 / 10</span>
-        <span id="dua-context-badge">For Knowledge</span>
+  <!-- Viewport Frame -->
+  <div id="viewport-frame">
+    <!-- Status Bar -->
+    <div id="status-bar">
+      <div id="status-left">
+        <span id="status-dot" class="waiting"></span>
+        <span id="status-text">Waiting for Claude to start...</span>
+        <span id="project-name" style="font-size: 0.75rem; color: var(--text-muted);"></span>
       </div>
-      <div id="arabic-text" lang="ar" dir="rtl"></div>
-      <div id="transliteration"></div>
-      <div id="translation"></div>
-      <div id="translation-bn" hidden></div>
-      <div id="virtue-text"></div>
+      <div id="lang-toggle">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="bn">বাং</button>
+      </div>
+      <button id="close-btn" title="Close">✕</button>
     </div>
-    <div id="timer-track">
-      <div id="timer-fill"></div>
-    </div>
-  </div>
 
-  <!-- Navigation -->
-  <div id="nav-controls">
-    <button class="nav-btn" id="prev-btn">← Prev</button>
-    <button class="nav-btn" id="pause-btn">⏸ Pause</button>
-    <button class="nav-btn" id="next-btn">Next →</button>
+    <!-- Main Content -->
+    <div id="stage">
+      <!-- Bismillah -->
+      <div id="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+      <!-- Dua Card -->
+      <div id="dua-card">
+        <div id="dua-header">
+          <span id="dua-number">1 / 10</span>
+          <span id="dua-context-badge">For Knowledge</span>
+        </div>
+        <div id="arabic-text" lang="ar" dir="rtl"></div>
+        <div id="transliteration"></div>
+        <div id="translation"></div>
+        <div id="translation-bn" hidden></div>
+        <div id="virtue-text"></div>
+      </div>
+      <div id="timer-track">
+        <div id="timer-fill"></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div id="nav-controls">
+      <button class="nav-btn" id="prev-btn">← Prev</button>
+      <button class="nav-btn" id="pause-btn">⏸ Pause</button>
+      <button class="nav-btn" id="next-btn">Next →</button>
+    </div>
   </div>
 
   <!-- Needs Input Overlay -->
@@ -599,6 +645,7 @@
     const $statusDot    = document.getElementById('status-dot');
     const $statusText   = document.getElementById('status-text');
     const $projectName  = document.getElementById('project-name');
+    const $closeBtn     = document.getElementById('close-btn');
     const $duaCard      = document.getElementById('dua-card');
     const $duaNumber    = document.getElementById('dua-number');
     const $badge        = document.getElementById('dua-context-badge');
@@ -812,6 +859,10 @@
     // ── Event listeners ───────────────────────────────────────────────────────
     $langBtns.forEach(btn => {
       btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+    });
+
+    $closeBtn.addEventListener('click', () => {
+      window.close();
     });
 
     $prevBtn.addEventListener('click', () => advanceDua(-1));

@@ -9,6 +9,9 @@ Islamic dua companion for Claude Code — displays duas while Claude works on yo
 - 📁 Clean project root — all files in `.claude/`
 - 🛠️ Works with any Claude Code project
 - 🚫 Easy removal — one command uninstalls completely
+- 🔌 Multiple projects run simultaneously with isolated ports
+- 📍 Project name displayed in status bar for easy identification
+- ✕ Quick close button to exit the UI anytime
 
 ## Installation (30 seconds)
 
@@ -50,6 +53,21 @@ Project B → http://localhost:5456/dua-companion.html
 ```
 
 Both can run at the same time without conflicts!
+
+## UI Design
+
+The dua companion interface is designed for focused reading:
+
+**Viewport Frame Structure:**
+- **Status Bar (Top)** — Shows live status, project name, language toggle, and close button
+- **Main Content Area** — Centered dua display with Arabic text, transliteration, and translation
+- **Navigation Bar (Bottom)** — Previous, Pause/Resume, Next buttons
+
+**Focus Area:**
+- The dua card is the focal point of the interface
+- All controls (language, close button) are tucked into the frame edges
+- Status updates happen silently in the background
+- You can close the UI anytime with the ✕ button in the top-right
 
 ## Project Structure
 
